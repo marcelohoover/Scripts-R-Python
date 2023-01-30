@@ -1,0 +1,74 @@
+Grant para administración de los recursos de lake formation
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "lakeformation:GetDataLakeSettings",
+                "lakeformation:PutDataLakeSettings"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "*"
+            ]
+        }
+    ]
+}
+-----------------------------------------------------------------
+https://docs.aws.amazon.com/lake-formation/latest/dg/required-permissions-for-grant.html
+
+
+arn:aws:iam::999999999999:user/marcelo.myname@email.com
+
+IAM permissions required to grant or revoke Lake Formation permissions
+
+All principals, including the data lake administrator, need the following AWS Identity and Access Management (IAM) permissions to grant or revoke AWS Lake Formation Data Catalog permissions or data location permissions with the Lake Formation API or the AWS CLI:
+
+lakeformation:GrantPermissions
+
+lakeformation:BatchGrantPermissions
+
+lakeformation:RevokePermissions
+
+lakeformation:BatchRevokePermissions
+
+glue:GetTable or glue:GetDatabase for a table or database that you're granting permissions on with the named resource method
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "glue:SearchTables",
+                "lakeformation:GetEffectivePermissionsForPath",
+                "lakeformation:BatchGrantPermissions",
+                "lakeformation:SearchDatabasesByLFTags",
+                "glue:GetTables",
+                "glue:GetPartitions",
+                "glue:GetDatabases",
+                "glue:GetDatabase",
+                "glue:GetTable",
+                "lakeformation:ListResources",
+                "lakeformation:GetDataAccess",
+                "lakeformation:SearchTablesByLFTags",
+                "lakeformation:RemoveLFTagsFromResource",
+                "iam:ListRoles",
+                "lakeformation:ListLFTags",
+                "lakeformation:UpdateLFTag",
+                "lakeformation:GetLFTag",
+                "lakeformation:BatchRevokePermissions",
+                "lakeformation:GrantPermissions",
+                "lakeformation:CreateLFTag",
+                "lakeformation:AddLFTagsToResource",
+                "lakeformation:DeleteLFTag",
+                "iam:ListUsers",
+                "lakeformation:PutDataLakeSettings",
+                "lakeformation:ListPermissions",
+                "lakeformation:RevokePermissions"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
