@@ -1,0 +1,272 @@
+root ********
+hadoop ********
+
+------------------------------------------------------------------
+#add user hadoop and give root privilegies
+------------------------------------------------------------------
+
+sudo gedit /etc/sudoers
+hadoop	ALL=(ALL) 	ALL
+
+------------------------------------------------------------------
+#Get cd image virtualbox
+------------------------------------------------------------------
+sudo yum install kernel-devel kernel-headers
+sudo yum install gcc make perl
+sudo yum install bzip2 unzip rsync wget net-tools
+
+------------------------------------------------------------------
+#Installing and Confi SSH
+------------------------------------------------------------------
+sudo yum install openssh-server openssh-clients
+
+sudo systemctl enable sshd
+sudo systemctl start sshd
+sudo systemctl status sshd
+
+sudo gedit /etc/ssh/sshd_config
+
+#Uncomment
+Port 22
+ListenAddress 0.0.0.0
+PermitRootLogin yes
+
+#Note that enabling SSH access for the root account is generally considered a bad security practice but its for study hadoop without troubles 
+Change PermitRootLogin to no
+
+add user in Authentication:
+# Authentication:
+AllowUsers	hadoop
+
+sudo systemctl restart sshd
+
+------------------------------------------------------------------
+#Removing openjava and Installing java 8 (1.8.0.2) and 11
+------------------------------------------------------------------
+
+sudo yum list java*
+sudo yum -y remove java*
+
+tar -xzf jdk-11.0.17_linux-x64_bin.tar.gz
+
+sudo mv jdk-11.0.17/ /opt/jdk
+
+#update system enviroments
+cd
+gedit .bachrc
+
+#JAVA 
+export JAVA_HOME=/opt/jdk
+export PATH=$PATH:$JAVA_HOME/bin
+
+source .bachrc
+
+java -version
+
+------------------------------------------------------------------
+#HADOOP INSTAL version 3.3.4
+------------------------------------------------------------------
+
+cd Downloads
+
+tar -xvf hadoop_file
+
+sudo mv hadoop_folder /opt/hadoop
+
+#set enviroment variables
+
+cd
+gedit .bashrc
+
+------------------------------------------------------------------
+#HADOOP CONFIGU SINGLE NODE STANDALONE
+------------------------------------------------------------------
+#Pseudo-Distributed Operation
+https://hadoop.apache.org/docs/r3.3.4/hadoop-project-dist/hadoop-common/SingleCluster.html#Pseudo-Distributed_Operation
+
+#Create enviroments variables to hadoop
+
+cd
+gedit .bashrc
+
+export HADOOP_HOME=/opt/hadoop
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME
+export YARN_HOME=$HADOOP_HOME
+export PATH=$PATH:$HADOOP_HOME/bin:$HADOOP_HOME/sbin
+
+
+#In /opt/hadoop/etc/hadoop edit core-site.xml and hdfs-site.xml add the parameters
+
+etc/hadoop/core-site.xml
+
+<configuration>
+<property>
+<name>fs.defaultFS</name>
+<value>hdfs://localhost:9000</value>
+</property>
+</configuration>
+
+etc/hadoop/hdfs-site.xml
+
+<configuration>
+<property>
+<name>dfs.replication</name>
+<value>1</value>
+</property>
+<property>
+<name>dfs.namenode.name.dir</name>
+<value>/opt/hadoop/dfs/namespace_logs</value>
+</property>
+<property>
+<name>dfs.datanode.data.dir</name>
+<value>/opt/hadoop/dfs/data</value>
+</property>
+<property>
+<name>dfs.namenode.checkpoint.dir</name>
+<value>/opt/hadoop/dfs/namesecondary</value>
+</property>
+</configuration>
+
+#then go to /opt/hadoop/ and create a directory to namenode, datanode and secondnamenode to not use el DIR TMP
+
+mkdir dfs/namespace_logs
+mkdir dfs/namesecondary
+mkdir dfs/data
+
+#Setup passphraseless ssh
+
+#In home/hadoop create a public and private key into the hidden folder
+ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa 
+# or ssh-keygen -t rsa (without keys to generate)
+
+#copy the public keys to datanodes
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
+#change the privilegies for the keys
+chmod 0600 ~/.ssh/authorized_keys
+
+sudo systemctl restart sshd
+
+#test ssh passphraseless
+ssh localhost
+exit
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++# TROUBLESHOTING case ssh still asking password
++# If ssh doesnot allow other users excepts by root, you must add an exception to user hadoop
++
++sudo gedit /etc/ssh/sshd_config
++#In AllowUsers , add the user hadoop and restart SSH services
++
++sudo systemctl restart sshd
++
++ssh localhost
++exit
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+START HADOOP
+
+hdfs namenode -format
+
+# Chek if you find INFO common.Storage: Storage directory /opt/hadoop/dfs/namespace_logs has been successfully formatted.
+
+start-dfs.sh
+
+stop-dfs.sh
+
+localhost:9870
+
+
+------------------------------------------------------------------
+#YARN INSTALL AND CONFIG
+------------------------------------------------------------------
+
+The main function of YARN is manage jobs MAP-REDUCE
+
+/opt/hadoop/etc/hadoop
+gedit /opt/hadoop/etc/hadoop/mapred-site.xml
+
+add the lines below
+
+<configuration>
+<property>
+<name>mapreduce.framework.name</name>
+<value>yarn</value>
+</property>
+<property>
+<name>mapreduce.application.classpath</name>
+<value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/</value>
+</property>
+</configuration>
+
+gedit /opt/hadoop/etc/hadoop/yarn-site.xml
+
+<configuration>
+<property>
+<name>yarn.nodemanager.aux-services</name>
+<value>mapreduce_shuffle</value>
+</property>
+<property>
+<name>yarn.nodemanager.env-whitelist</name>
+<value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PREPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_HOME,PATH,LANG,TZ,HADOOP_MAPRED_HOME</value>
+</property>
+</configuration>
+
+
+START YARN
+
+start-yarn.sh
+
+execute um jps para verificar os servicos do HDFS + YARN
+namenode + datanodes + secondary namenodes (HDFS)
+
+ResourceManager + NodeManager (YARN)
+ResourceManager - http://localhost:8088/
+Execute um MapReduce job e veja o gerenciamento pelo ResourceManager.
+Quando terminar, pare o servico do YARN
+
+stop-yarn.sh
+
+
+------------------------------------------------------------------
+#MYSQL
+------------------------------------------------------------------
+
+sudo yum localinstall https://dev.mysql.com/get/https://dev.mysql.com/get/mysql80-community-release-el8-3.noarch.rpm
+
+rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2022
+sudo yum install mysql-community-server
+sudo systemctl enable mysqld
+sudo systemctl start mysqld
+sudo systemctl status mysqld
+
+------------------------------------------------------------------
+#Kill the locked process to fix “another app is currently holding the yum lock”
+------------------------------------------------------------------
+get the pid process
+cat /var/run/yum.pid
+
+more details on this process
+ps -p 9571
+
+kill -9 9571
+
+------------------------------------------------------------------
+#Disable Firewall 
+------------------------------------------------------------------
+#Check the status
+
+sudo firewall-cmd --state
+
+#You can temporarily stop the FirewallD service with the following command however this change will be valid for the current runtime session only
+
+sudo systemctl stop firewalld
+
+#To permanently disable the firewall on your CentOS 7 system, follow the steps below
+
+sudo systemctl stop firewalld
+
+sudo systemctl disable firewalld
