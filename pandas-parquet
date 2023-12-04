@@ -1,0 +1,46 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  7 18:24:28 2023
+
+@author: Marcelo.Pimentel
+"""
+
+#!pip install pyarrow
+import os
+import pandas as pd
+import pyarrow as pa
+import pyarrow.csv as pv
+import pyarrow.parquet as pq
+
+print("Pandas Version : {}".format(pd.__version__))
+print("pyarrow Version : {}".format(pa.__version__))
+
+
+if __name__ == "__main__":
+    
+    # Folder Path
+    path = "C:/Users/.../Data"
+    
+    # Change the directory
+    os.chdir(path)
+    
+    for arch in os.listdir():
+        # Check whether file is in text format or not
+        if arch.endswith(".csv"):
+            print("Loading" + arch)
+            
+            df = pd.read_csv(arch, encoding = "ISO-8859-1",
+                             on_bad_lines='skip', sep=';')
+            #df.describe()
+            #df.dtypes
+
+            #To table PYarrow from pandas dataframe
+            table = pa.Table.from_pandas(df)
+
+            #To parquet from table PYarrow 
+            pq.write_table(table, arch.replace('csv', 'parquet'))
+
+
+    #read parquet in pandas
+    df = pd.read_parquet('C:/Users/.../Data/AtencionesUrgencia2022.parquet', engine='pyarrow')
+    
