@@ -1,4 +1,4 @@
-# Scripts_R
+# Scripts in Python - R
 Scripts de exemplos/testes
 
 ## Scripts para consultas & estudo.
