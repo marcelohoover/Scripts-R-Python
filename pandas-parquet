@@ -2,24 +2,23 @@
 """
 Created on Wed Jun  7 18:24:28 2023
 
-@author: Marcelo.Pimentel
+@author: Marcelo
 """
 
 #!pip install pyarrow
 import os
 import pandas as pd
 import pyarrow as pa
-import pyarrow.csv as pv
 import pyarrow.parquet as pq
 
-print("Pandas Version : {}".format(pd.__version__))
-print("pyarrow Version : {}".format(pa.__version__))
+print("Pandas Version : {}".format(pd.__version__)) # 2.2.3
+print("pyarrow Version : {}".format(pa.__version__)) # 19.0.1
 
 
 if __name__ == "__main__":
     
     # Folder Path
-    path = "C:/Users/.../Data"
+    path = "E:/folder/.../Data"
     
     # Change the directory
     os.chdir(path)
@@ -41,5 +40,5 @@ if __name__ == "__main__":
 
 
     #read parquet in pandas
-    df = pd.read_parquet('C:/Users/.../Data/AtencionesUrgencia2022.parquet', engine='pyarrow')
+    df = pd.read_parquet('E:/.../file.parquet', engine='pyarrow')
     
